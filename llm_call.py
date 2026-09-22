@@ -1,20 +1,3 @@
-# from dotenv import load_dotenv
-# from langchain_openai import ChatOpenAI
-# import os
-
-# load_dotenv()
-
-# llm = ChatOpenAI(
-#     model=os.getenv("MODEL"),
-#     max_tokens=None,
-#     base_url=os.getenv("BASE_URL"),
-#     api_key=os.getenv("API_KEY"),
-# )
-
-# response = llm.invoke(input("Hi! I am an AI assistant. Ask me anything! : \n"))
-
-# print(response.content)
-
 from dotenv import load_dotenv
 from langchain_openai import ChatOpenAI
 
@@ -57,16 +40,24 @@ http_client = httpx.Client(
 )
 
 
-llm = ChatOpenAI(
-    model=os.getenv("MODEL"),
-    max_tokens=None,
-    base_url=os.getenv("BASE_URL"),
-    api_key=os.getenv("API_KEY"),
-    http_client=http_client,
-)
+def create_llm():
+    return ChatOpenAI(
+        model=os.getenv("MODEL"),
+        max_tokens=None,
+        base_url=os.getenv("BASE_URL"),
+        api_key=os.getenv("API_KEY"),
+        http_client=http_client,
+    )
 
 
-response = llm.invoke("Hello, this is a test")
+def ask_llm(prompt: str) -> str:
+    llm = create_llm()
+    response = llm.invoke(prompt)
+    return response.content
 
-print("\nRESPONSE:")
-print(response.content)
+
+if __name__ == "__main__":
+    response = ask_llm("Hello, this is a test")
+
+    print("\nRESPONSE:")
+    print(response)

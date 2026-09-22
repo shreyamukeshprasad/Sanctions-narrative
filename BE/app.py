@@ -1,7 +1,9 @@
 import os
 from pathlib import Path
 
-from flask import Flask, jsonify, send_from_directory
+from flask import Flask, jsonify, request, send_from_directory
+
+from llm_call import ask_llm
 
 app = Flask(__name__)
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -12,7 +14,7 @@ FE_DIR = BASE_DIR / "FE"
 def add_cors_headers(response):
     response.headers["Access-Control-Allow-Origin"] = "*"
     response.headers["Access-Control-Allow-Headers"] = "Content-Type"
-    response.headers["Access-Control-Allow-Methods"] = "GET, OPTIONS"
+    response.headers["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS"
     return response
 
 
@@ -70,6 +72,21 @@ def get_case(case_reference_id):
         return jsonify({"error": "Case not found"}), 404
 
     return jsonify(CASE)
+
+
+@app.post("/llm")
+@app.post("/api/llm")
+def call_llm():
+    data = request.get_json(silent=True) or {}
+    prompt = data.get("prompt", "").strip()
+
+    if not prompt:
+        return jsonify({"error": "Request body must include a non-empty 'prompt'."}), 400
+
+    try:
+        return jsonify({"response": ask_llm(prompt)})
+    except Exception as exc:
+        return jsonify({"error": "LLM call failed", "details": str(exc)}), 500
 
 
 if __name__ == "__main__":
