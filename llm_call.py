@@ -7,6 +7,9 @@ import json
 
 load_dotenv()
 
+SECRET_SCOPE = "llm-secrets"
+SECRET_KEY = "api-key"
+
 
 def log_request(request: httpx.Request):
     print("\n========== OUTGOING REQUEST ==========")
@@ -40,10 +43,21 @@ http_client = httpx.Client(
 )
 
 
+def get_databricks_secret(scope: str, key: str) -> str | None:
+    try:
+        from databricks.sdk import WorkspaceClient
+
+        client = WorkspaceClient()
+        return client.secrets.get_secret(scope=scope, key=key).value
+    except Exception as exc:
+        print(f"Unable to read Databricks secret {scope}/{key}: {exc}")
+        return None
+
+
 def create_llm():
     model = os.getenv("MODEL")
     base_url = os.getenv("BASE_URL")
-    api_key = os.getenv("API_KEY")
+    api_key = os.getenv("API_KEY") or get_databricks_secret(SECRET_SCOPE, SECRET_KEY)
 
     missing = [
         name
