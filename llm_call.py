@@ -41,11 +41,28 @@ http_client = httpx.Client(
 
 
 def create_llm():
+    model = os.getenv("MODEL")
+    base_url = os.getenv("BASE_URL")
+    api_key = os.getenv("API_KEY")
+
+    missing = [
+        name
+        for name, value in {
+            "MODEL": model,
+            "BASE_URL": base_url,
+            "API_KEY": api_key,
+        }.items()
+        if not value
+    ]
+
+    if missing:
+        raise RuntimeError(f"Missing required LLM environment variables: {', '.join(missing)}")
+
     return ChatOpenAI(
-        model=os.getenv("MODEL"),
+        model=model,
         max_tokens=None,
-        base_url=os.getenv("BASE_URL"),
-        api_key=os.getenv("API_KEY"),
+        base_url=base_url,
+        api_key=api_key,
         http_client=http_client,
     )
 

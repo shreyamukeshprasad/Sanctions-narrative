@@ -1,3 +1,9 @@
 command:
   - python
   - BE/app.py
+
+env:
+  - name: BASE_URL
+    value: "https://genai-sharedservice-americas.pwcinternal.com/"
+  - name: MODEL
+    value: "azure.gpt-5.5"
