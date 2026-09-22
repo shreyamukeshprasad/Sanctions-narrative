@@ -431,7 +431,7 @@
       const loadStatus = document.getElementById("load-status");
 
       try {
-        const response = await fetch(`${API_BASE_URL}/api/cases/${CASE_REFERENCE_ID}`);
+        const response = await fetch(`${API_BASE_URL}/cases/${CASE_REFERENCE_ID}`);
 
         if (!response.ok) {
           throw new Error(`API returned ${response.status}`);

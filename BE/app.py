@@ -47,6 +47,7 @@ def index():
     return send_from_directory(FE_DIR, "case-summary.html")
 
 
+@app.get("/version")
 @app.get("/api/version")
 def version():
     return jsonify({
@@ -56,11 +57,13 @@ def version():
     })
 
 
+@app.get("/health")
 @app.get("/api/health")
 def health():
     return jsonify({"status": "ok"})
 
 
+@app.get("/cases/<case_reference_id>")
 @app.get("/api/cases/<case_reference_id>")
 def get_case(case_reference_id):
     if case_reference_id != CASE["caseReferenceId"]:
@@ -73,5 +76,5 @@ if __name__ == "__main__":
     app.run(
         debug=os.getenv("FLASK_DEBUG", "false").lower() == "true",
         host="0.0.0.0",
-        port=int(os.getenv("PORT", "5000")),
+        port=int(os.getenv("DATABRICKS_APP_PORT", os.getenv("PORT", "5000"))),
     )
