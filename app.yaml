@@ -1,1 +1,3 @@
-command: python BE/app.py
+command:
+  - python
+  - BE/app.py
