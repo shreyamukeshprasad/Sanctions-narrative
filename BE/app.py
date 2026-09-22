@@ -1,8 +1,11 @@
 import os
+from pathlib import Path
 
-from flask import Flask, jsonify
+from flask import Flask, jsonify, send_from_directory
 
 app = Flask(__name__)
+BASE_DIR = Path(__file__).resolve().parent.parent
+FE_DIR = BASE_DIR / "FE"
 
 
 @app.after_request
@@ -37,6 +40,20 @@ CASE = {
     "beneficiaryFi": "Demo Bank B",
     "sanctionsProgram": "Sample Watchlist - vessel",
 }
+
+
+@app.get("/")
+def index():
+    return send_from_directory(FE_DIR, "case-summary.html")
+
+
+@app.get("/api/version")
+def version():
+    return jsonify({
+        "app": "sanctions-narrative",
+        "version": "test-app-001",
+        "source": "BE/app.py",
+    })
 
 
 @app.get("/api/health")
