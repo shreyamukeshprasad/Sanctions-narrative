@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Case Summary</title>
+  <style>
+    :root {
+      --green: #004c3f;
+      --blue: #2b579a;
+      --border: #c9c9c9;
+      --text: #111;
+      --muted: #6b6b6b;
+      --highlight: #fff200;
+      --panel: #fff;
+      --shadow: 0 2px 9px rgba(0, 0, 0, 0.14);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: #f5f5f5;
+      color: var(--text);
+      font-family: "Segoe UI", Arial, sans-serif;
+      font-size: 12px;
+    }
+
+    .page {
+      width: min(940px, calc(100vw - 32px));
+      margin: 16px auto;
+      background: var(--panel);
+      border: 3px dotted #c8c8c8;
+    }
+
+    .summary {
+      padding: 8px 14px 36px;
+      box-shadow: var(--shadow);
+      position: relative;
+      z-index: 1;
+    }
+
+    .summary-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 18px;
+      font-weight: 700;
+    }
+
+    .back {
+      color: var(--blue);
+      font-size: 24px;
+      line-height: 1;
+      text-decoration: none;
+    }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+      gap: 24px 46px;
+    }
+
+    .field-label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 700;
+    }
+
+    .value {
+      min-height: 16px;
+    }
+
+    .load-status {
+      margin-left: auto;
+      color: var(--muted);
+      font-weight: 400;
+    }
+
+    .tabs-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 18px 0 12px;
+      border-bottom: 1px solid #ddd;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 12px;
+    }
+
+    .tab {
+      padding: 0 0 5px;
+      border: 0;
+      background: transparent;
+      color: #222;
+      font: inherit;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .tab.active {
+      color: var(--green);
+      border-bottom: 2px solid var(--green);
+    }
+
+    .actions {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 4px;
+    }
+
+    .btn {
+      height: 17px;
+      min-width: 62px;
+      padding: 0 12px;
+      border: 1px solid var(--green);
+      border-radius: 12px;
+      background: #fff;
+      color: var(--green);
+      font: inherit;
+      font-weight: 700;
+      line-height: 15px;
+      cursor: pointer;
+    }
+
+    .btn.primary {
+      background: var(--green);
+      color: #fff;
+    }
+
+    .details {
+      padding: 12px 28px 18px;
+    }
+
+    .description {
+      margin-bottom: 14px;
+    }
+
+    .required {
+      color: #d60000;
+      margin-left: 4px;
+    }
+
+    textarea,
+    input,
+    select {
+      width: 100%;
+      height: 25px;
+      border: 1px solid var(--border);
+      border-radius: 0;
+      background: #fff;
+      color: #1b1b1b;
+      font: inherit;
+      padding: 4px 6px;
+      box-shadow: inset 0 0 2px rgba(0, 0, 0, 0.12);
+    }
+
+    textarea {
+      height: 48px;
+      resize: none;
+    }
+
+    select {
+      appearance: none;
+      background:
+        linear-gradient(45deg, transparent 50%, #aaa 50%) calc(100% - 12px) 10px / 7px 7px no-repeat,
+        linear-gradient(135deg, #aaa 50%, transparent 50%) calc(100% - 7px) 10px / 7px 7px no-repeat,
+        #fff;
+      padding-right: 24px;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px 34px;
+      align-items: end;
+    }
+
+    .form-field label {
+      display: block;
+      margin: 0 0 6px 2px;
+    }
+
+    .radio-line {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-bottom: 3px;
+    }
+
+    .radio-line label {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      margin: 0;
+    }
+
+    .radio-line input {
+      width: 11px;
+      height: 11px;
+      accent-color: var(--green);
+      box-shadow: none;
+    }
+
+    .muted label,
+    .muted input {
+      color: #9a9a9a;
+    }
+
+    .date {
+      position: relative;
+    }
+
+    .date::after {
+      content: "";
+      position: absolute;
+      right: 6px;
+      bottom: 6px;
+      width: 9px;
+      height: 9px;
+      border: 1px solid #b8b8b8;
+      background:
+        linear-gradient(#b8b8b8, #b8b8b8) 0 2px / 100% 1px no-repeat,
+        linear-gradient(90deg, transparent 48%, #d5d5d5 48%, #d5d5d5 56%, transparent 56%) 0 0 / 100% 100% no-repeat;
+    }
+
+    .mark {
+      background: var(--highlight);
+      box-decoration-break: clone;
+      -webkit-box-decoration-break: clone;
+      padding: 0 2px;
+    }
+
+    .wide-mark {
+      background: linear-gradient(var(--highlight), var(--highlight)) left 50% / 78% 70% no-repeat;
+    }
+
+    @media (max-width: 760px) {
+      .summary-grid,
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .tabs-row,
+      .actions {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .details {
+        padding-inline: 16px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <section class="summary" aria-labelledby="case-title">
+      <div class="summary-title">
+        <a class="back" href="#" aria-label="Back">&lsaquo;</a>
+        <span id="case-title">Case Summary</span>
+        <span class="load-status" id="load-status">Loading case details...</span>
+      </div>
+
+      <div class="summary-grid">
+        <div>
+          <span class="field-label">Case Reference ID</span>
+          <div class="value" data-field="caseReferenceId"></div>
+        </div>
+        <div>
+          <span class="field-label">Created On</span>
+          <div class="value" data-field="createdOn"></div>
+        </div>
+        <div>
+          <span class="field-label">Last Status</span>
+          <div class="value" data-field="lastStatus"></div>
+        </div>
+        <div>
+          <span class="field-label">Case Type</span>
+          <div class="value" data-field="caseType"></div>
+        </div>
+        <div>
+          <span class="field-label">System ID</span>
+          <div class="value" data-field="systemId"></div>
+        </div>
+        <div>
+          <span class="field-label">Case Age</span>
+          <div class="value" data-field="caseAge"></div>
+        </div>
+        <div>
+          <span class="field-label">TAT</span>
+          <div class="value" data-field="tat"></div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="tabs-row">
+        <div class="tabs" role="tablist" aria-label="Case tabs">
+          <button class="tab active" type="button" role="tab" aria-selected="true">Case Details</button>
+          <button class="tab" type="button" role="tab" aria-selected="false">Audit Logs</button>
+        </div>
+        <div class="actions">
+          <button class="btn" type="button">Export to XLSX</button>
+          <button class="btn" type="button">Follow</button>
+          <button class="btn primary" type="button">Share</button>
+        </div>
+      </div>
+
+      <form class="details">
+        <div class="description">
+          <label for="case-description">Case Description <span class="required">*</span></label>
+          <textarea id="case-description" data-field="caseDescription"></textarea>
+        </div>
+
+        <div class="form-grid">
+          <div class="form-field">
+            <label for="status">Status <span class="required">*</span></label>
+            <select id="status" data-field="status">
+              <option></option>
+            </select>
+          </div>
+
+          <div class="form-field">
+            <label for="reviewed-by">Reviewed by <span class="required">*</span></label>
+            <select id="reviewed-by" data-field="reviewedBy">
+              <option></option>
+            </select>
+          </div>
+
+          <div class="form-field">
+            <div class="radio-line" aria-label="Owner type">
+              <label><input type="checkbox" checked> Users</label>
+              <label><input type="checkbox"> Teams</label>
+            </div>
+            <label for="owner">Owner <span class="required">*</span></label>
+            <select id="owner" data-field="owner">
+              <option></option>
+            </select>
+          </div>
+
+          <div class="form-field">
+            <label for="escalate-to">Escalate To</label>
+            <select id="escalate-to" data-field="escalateTo">
+              <option></option>
+            </select>
+          </div>
+
+          <div class="form-field">
+            <label for="escalation-reason">Escalation Reason</label>
+            <input id="escalation-reason" data-field="escalationReason" type="text">
+          </div>
+
+          <div class="form-field muted">
+            <label for="escalation-date">Escalation Date</label>
+            <div class="date">
+              <input id="escalation-date" data-field="escalationDate" type="text" aria-label="Escalation Date">
+            </div>
+          </div>
+
+          <div class="form-field">
+            <label for="value-date">Value Date</label>
+            <div class="date wide-mark">
+              <input id="value-date" data-field="valueDate" type="text">
+            </div>
+          </div>
+
+          <div class="form-field">
+            <label for="remitter-name">Remitter Name</label>
+            <input id="remitter-name" data-field="remitterName" class="wide-mark" type="text">
+          </div>
+
+          <div class="form-field">
+            <label for="remitter-account">Remitter Account Number</label>
+            <input id="remitter-account" data-field="remitterAccountNumber" type="text">
+          </div>
+
+          <div class="form-field">
+            <label for="remitting-fi">Remitting FI</label>
+            <input id="remitting-fi" data-field="remittingFi" class="wide-mark" type="text">
+          </div>
+
+          <div class="form-field">
+            <label for="beneficiary">Beneficiary</label>
+            <input id="beneficiary" data-field="beneficiary" class="wide-mark" type="text">
+          </div>
+
+          <div class="form-field">
+            <label for="beneficiary-account">Beneficiary Account Number</label>
+            <input id="beneficiary-account" data-field="beneficiaryAccountNumber" type="text">
+          </div>
+
+          <div class="form-field">
+            <label for="beneficiary-fi">Beneficiary FI</label>
+            <input id="beneficiary-fi" data-field="beneficiaryFi" class="wide-mark" type="text">
+          </div>
+
+          <div class="form-field">
+            <label for="sanctions-program">Sanctions Program</label>
+            <input id="sanctions-program" data-field="sanctionsProgram" class="wide-mark" type="text">
+          </div>
+        </div>
+      </form>
+    </section>
+  </main>
+  <script>
+    const API_BASE_URL = "http://127.0.0.1:5000";
+    const CASE_REFERENCE_ID = "CASE-000001";
+
+    function setControlValue(element, value) {
+      if (element.tagName === "SELECT") {
+        element.innerHTML = "";
+        element.add(new Option(value || "", value || ""));
+        return;
+      }
+
+      if ("value" in element) {
+        element.value = value || "";
+        return;
+      }
+
+      element.textContent = value || "";
+    }
+
+    async function loadCaseSummary() {
+      const loadStatus = document.getElementById("load-status");
+
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/cases/${CASE_REFERENCE_ID}`);
+
+        if (!response.ok) {
+          throw new Error(`API returned ${response.status}`);
+        }
+
+        const data = await response.json();
+
+        document.querySelectorAll("[data-field]").forEach((element) => {
+          setControlValue(element, data[element.dataset.field]);
+        });
+
+        loadStatus.textContent = "Loaded from API";
+      } catch (error) {
+        console.error("Unable to load case summary", error);
+        loadStatus.textContent = "Unable to load API data";
+      }
+    }
+
+    loadCaseSummary();
+  </script>
+</body>
+</html>
