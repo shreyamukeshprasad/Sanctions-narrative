@@ -3,8 +3,6 @@ from pathlib import Path
 
 from flask import Flask, jsonify, request, send_from_directory
 
-from llm_call import ask_llm
-
 app = Flask(__name__)
 BASE_DIR = Path(__file__).resolve().parent.parent
 FE_DIR = BASE_DIR / "FE"
@@ -84,6 +82,8 @@ def call_llm():
         return jsonify({"error": "Request body must include a non-empty 'prompt'."}), 400
 
     try:
+        from llm_call import ask_llm
+
         return jsonify({"response": ask_llm(prompt)})
     except Exception as exc:
         return jsonify({"error": "LLM call failed", "details": str(exc)}), 500
