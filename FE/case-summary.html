@@ -79,6 +79,29 @@
       font-weight: 400;
     }
 
+    .case-lookup {
+      display: flex;
+      align-items: flex-end;
+      gap: 10px;
+      margin-bottom: 18px;
+      max-width: 440px;
+    }
+
+    .case-lookup-input {
+      flex: 1;
+    }
+
+    .case-lookup label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: 700;
+    }
+
+    .case-lookup .btn {
+      height: 25px;
+      line-height: 23px;
+    }
+
     .tabs-row {
       display: flex;
       align-items: center;
@@ -247,9 +270,14 @@
       }
 
       .tabs-row,
-      .actions {
+      .actions,
+      .case-lookup {
         align-items: flex-start;
         flex-direction: column;
+      }
+
+      .case-lookup {
+        max-width: none;
       }
 
       .details {
@@ -265,6 +293,14 @@
         <a class="back" href="#" aria-label="Back">&lsaquo;</a>
         <span id="case-title">Case Summary</span>
         <span class="load-status" id="load-status">Loading case details...</span>
+      </div>
+
+      <div class="case-lookup">
+        <div class="case-lookup-input">
+          <label for="case-search">Case Number</label>
+          <input id="case-search" type="text" value="CASE-000001">
+        </div>
+        <button class="btn primary" id="case-search-submit" type="button">Fetch</button>
       </div>
 
       <div class="summary-grid">
@@ -410,7 +446,7 @@
   </main>
   <script>
     const API_BASE_URL = "";
-    const CASE_REFERENCE_ID = "CASE-000001";
+    const DEFAULT_CASE_REFERENCE_ID = "CASE-000001";
 
     function setControlValue(element, value) {
       if (element.tagName === "SELECT") {
@@ -427,14 +463,29 @@
       element.textContent = value || "";
     }
 
-    async function loadCaseSummary() {
+    function clearCaseFields() {
+      document.querySelectorAll("[data-field]").forEach((element) => {
+        setControlValue(element, "");
+      });
+    }
+
+    async function loadCaseSummary(caseReferenceId = DEFAULT_CASE_REFERENCE_ID) {
       const loadStatus = document.getElementById("load-status");
+      const normalizedCaseReferenceId = caseReferenceId.trim().toUpperCase();
+
+      if (!normalizedCaseReferenceId) {
+        clearCaseFields();
+        loadStatus.textContent = "Enter a case number";
+        return;
+      }
 
       try {
-        const response = await fetch(`${API_BASE_URL}/cases/${CASE_REFERENCE_ID}`);
+        loadStatus.textContent = "Loading case details...";
+        const response = await fetch(`${API_BASE_URL}/cases/${encodeURIComponent(normalizedCaseReferenceId)}`);
 
         if (!response.ok) {
-          throw new Error(`API returned ${response.status}`);
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.error || `API returned ${response.status}`);
         }
 
         const data = await response.json();
@@ -446,11 +497,23 @@
         loadStatus.textContent = "Loaded from API";
       } catch (error) {
         console.error("Unable to load case summary", error);
-        loadStatus.textContent = "Unable to load API data";
+        clearCaseFields();
+        loadStatus.textContent = error.message;
       }
     }
 
-    loadCaseSummary();
+    document.getElementById("case-search-submit").addEventListener("click", () => {
+      loadCaseSummary(document.getElementById("case-search").value);
+    });
+
+    document.getElementById("case-search").addEventListener("keydown", (event) => {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        loadCaseSummary(event.target.value);
+      }
+    });
+
+    loadCaseSummary(DEFAULT_CASE_REFERENCE_ID);
   </script>
 </body>
 </html>
